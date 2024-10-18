@@ -3,6 +3,14 @@ import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 import { knex } from '../database'
 
+// Cookies <-> Formas da gente manter contexto entre requisições
+// de maneira geral, coleta o que vc esta fazendo mesmo sem login
+// gera um id no teu navegador ou algo do tipo
+// parametros criados pela propria aplicaçao e enviado em todas
+// as requisições
+// ótimos para identificar usuarios ou anotar informações entre requisiçoes
+// (informações de contexto)
+
 export async function transactionsRoutes(app: FastifyInstance) {
   app.get('/', async () => {
     const transactions = await knex('transactions').select()
@@ -32,16 +40,15 @@ export async function transactionsRoutes(app: FastifyInstance) {
 
   app.get('/summary', async () => {
     const summary = await knex('transactions')
-    .sum('amount', { as: 'amount' })
-    // define o nome da coluna apenas como amount, pq se nao 
-    // ficaria sum('amount') no nome
-    .first()
+      .sum('amount', { as: 'amount' })
+      // define o nome da coluna apenas como amount, pq se nao
+      // ficaria sum('amount') no nome
+      .first()
     // colocamos o first pq se nao ele retorna um array, queremos
     // dizer que o resultado vai ser um só
 
     return { summary }
   })
-
 
   app.post('/', async (request, reply) => {
     // { title, amount, type: credit ou debit }
@@ -55,10 +62,25 @@ export async function transactionsRoutes(app: FastifyInstance) {
       request.body,
     )
 
+    let sessionId = request.cookies.sessionId
+
+    if (!sessionId) {
+      sessionId = randomUUID()
+
+      reply.cookie('sessionId', sessionId, {
+        path: '/',
+        // quais rotas podem usar este cookie
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        // passa em segundos quanto tempo o cookie vai durar no
+        // navegador do usuario
+      })
+    }
+
     await knex('transactions').insert({
       id: randomUUID(),
       title,
       amount: type === 'credit' ? amount : amount * -1,
+      session_id: sessionId,
     })
 
     return reply.status(201).send()

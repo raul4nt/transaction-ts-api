@@ -12,6 +12,26 @@ import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 // ótimos para identificar usuarios ou anotar informações entre requisiçoes
 // (informações de contexto)
 
+
+// Tipos de teste
+// Unitários: unidade da sua aplicação
+// Integração: comunicação entre duas ou mais unidades
+// e2e - ponta a ponta: simulam um usuário operando na nossa aplicação
+
+// front-end: abre a página de login, digita o texto diego@rocketseat.com.br no
+// campo com id email, clica no botao...
+// back-end: chamadas HTTP, WebSockets
+
+// Pirâmide de testes: E2E (não dependem de nenhuma tecnologia, não dependem de arquitetura)
+// pouco performáticos, na rocketseat, por exemplo, tem 2000 testes no back0end
+// demoraria cerca de 16 min pra fazer um teste E2E
+// por isso os testes unitários são a base da nossa aplicação, sempre vamos
+// ter mais testes unitários do que os outros tipos, depois os de integração,
+// e, por último, os e2e
+
+
+
+
 export async function transactionsRoutes(app: FastifyInstance) {
   // este é apenas um exemplo que o Diego deu de como fazer um hook global
   // global neste caso seria global neste contexto dessas rotas que estou(transactionRoutes)

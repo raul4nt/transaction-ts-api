@@ -13,6 +13,17 @@ import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 // (informações de contexto)
 
 export async function transactionsRoutes(app: FastifyInstance) {
+  // este é apenas um exemplo que o Diego deu de como fazer um hook global
+  // global neste caso seria global neste contexto dessas rotas que estou(transactionRoutes)
+  // se eu tentasse fazer isso em uma outra rota que nao esta aqui, nao funcionaria
+  // para funcionar em todas, eu teria que colocar isso la no meu server.ts, antes
+  // do registro das rotas.
+  // eu tb poderia importar uma funçao, que nem fizemos com o checkSessionidExists
+  // eu nao preciso necessariamente escrever ela aqui direito(da maneira que  foi feito neste caso)
+  app.addHook('preHandler', async (request) => {
+    console.log(`[${request.method} ${request.url}]`)
+  })
+
   app.get(
     '/',
     {

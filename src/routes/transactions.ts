@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 import { knex } from '../database'
+import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 
 // Cookies <-> Formas da gente manter contexto entre requisições
 // de maneira geral, coleta o que vc esta fazendo mesmo sem login
@@ -12,43 +13,79 @@ import { knex } from '../database'
 // (informações de contexto)
 
 export async function transactionsRoutes(app: FastifyInstance) {
-  app.get('/', async () => {
-    const transactions = await knex('transactions').select()
+  app.get(
+    '/',
+    {
+      preHandler: [checkSessionIdExists],
+      // antes de executar o handler(ou seja, o que vem abaixo), ele executará
+      // este preHandler, que é um array de functions que eu posso colocar
+      // neste caso, ele executara o checkSessionIdExists, e, caso de algum erro,
+      // ja vai dar
+    },
+    async (request) => {
+      const { sessionId } = request.cookies
 
-    return { transactions }
-    // o return fica melhor assim, com o transactions dentro de um
-    // objeto, pois caso a gente queira futuramente retornar alguma outra
-    // coisa junto, esta outra coisa nao se misturara com o select de
-    // transactions
-  })
+      const transactions = await knex('transactions')
+        .where('session_id', sessionId)
+        .select()
 
-  app.get('/:id', async (request) => {
-    const getTransactionParamsSchema = z.object({
-      id: z.string().uuid(),
-    })
+      return { transactions }
+      // o return fica melhor assim, com o transactions dentro de um
+      // objeto, pois caso a gente queira futuramente retornar alguma outra
+      // coisa junto, esta outra coisa nao se misturara com o select de
+      // transactions
+    },
+  )
 
-    const { id } = getTransactionParamsSchema.parse(request.params)
+  app.get(
+    '/:id',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request) => {
+      const getTransactionParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
 
-    const transaction = await knex('transactions').where('id', id).first()
-    // com o first eu ja digo que vai ter apenas um id igual a esse
-    // isso tb evita do banco, mesmo depois de achar um com id igual,
-    // continuar fazendo uma varredura em todas as outras linhas para
-    // tentar achar outro com este mesmo id
+      const { id } = getTransactionParamsSchema.parse(request.params)
 
-    return { transaction }
-  })
+      const { sessionId } = request.cookies
 
-  app.get('/summary', async () => {
-    const summary = await knex('transactions')
-      .sum('amount', { as: 'amount' })
-      // define o nome da coluna apenas como amount, pq se nao
-      // ficaria sum('amount') no nome
-      .first()
-    // colocamos o first pq se nao ele retorna um array, queremos
-    // dizer que o resultado vai ser um só
+      const transaction = await knex('transactions')
+        .where({
+          session_id: sessionId,
+          id,
+        })
+        .first()
+      // com o first eu ja digo que vai ter apenas um id igual a esse
+      // isso tb evita do banco, mesmo depois de achar um com id igual,
+      // continuar fazendo uma varredura em todas as outras linhas para
+      // tentar achar outro com este mesmo id
 
-    return { summary }
-  })
+      return { transaction }
+    },
+  )
+
+  app.get(
+    '/summary',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request) => {
+      const { sessionId } = request.cookies
+
+      const summary = await knex('transactions')
+        .where('session_id', sessionId)
+        // define o nome da coluna apenas como amount, pq se nao
+        // ficaria sum('amount') no nome
+        .sum('amount', { as: 'amount' })
+        .first()
+      // colocamos o first pq se nao ele retorna um array, queremos
+      // dizer que o resultado vai ser um só
+
+      return { summary }
+    },
+  )
 
   app.post('/', async (request, reply) => {
     // { title, amount, type: credit ou debit }

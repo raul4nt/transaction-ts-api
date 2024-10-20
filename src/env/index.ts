@@ -1,5 +1,17 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
 import { z } from 'zod'
+
+if (process.env.NODE_ENV === 'test') {
+  config({ path: '.env.test' })
+  // o NODE_ENV é preenchido automaticamente quando usamos
+  // vitest como 'test'. ou seja, se o NODE_ENV estiver como test,
+  // estamos executando testes. logo, quero usar o .env de teste
+} else {
+  config()
+  // se nao for 'test', singifica que nao estou rodando teste e sim
+  // executando a aplicação normalmente, então, por default, o 
+  // config procurará o .env normal, e nao o .env.test
+}
 
 // cria um esquema que espera um  objeto com
 // determinadas chaves e valores

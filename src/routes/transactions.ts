@@ -12,7 +12,6 @@ import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 // ótimos para identificar usuarios ou anotar informações entre requisiçoes
 // (informações de contexto)
 
-
 // Tipos de teste
 // Unitários: unidade da sua aplicação
 // Integração: comunicação entre duas ou mais unidades
@@ -28,9 +27,6 @@ import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 // por isso os testes unitários são a base da nossa aplicação, sempre vamos
 // ter mais testes unitários do que os outros tipos, depois os de integração,
 // e, por último, os e2e
-
-
-
 
 export async function transactionsRoutes(app: FastifyInstance) {
   // este é apenas um exemplo que o Diego deu de como fazer um hook global

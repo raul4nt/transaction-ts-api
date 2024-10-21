@@ -6,6 +6,8 @@ import { execSync } from 'node:child_process'
 // do codigo
 import { app } from '../src/app'
 
+// ESTES TESTES SÃO E2E
+
 // categoria os testes(podemos colocar até subcategorias, 
 // uma dentro da outra). ajuda a dividir. por exemplo, neste caso,
 // o before all e o afterAll irao valer apenas para testes desta

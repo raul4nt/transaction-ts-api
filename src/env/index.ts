@@ -9,7 +9,7 @@ if (process.env.NODE_ENV === 'test') {
 } else {
   config()
   // se nao for 'test', singifica que nao estou rodando teste e sim
-  // executando a aplicação normalmente, então, por default, o 
+  // executando a aplicação normalmente, então, por default, o
   // config procurará o .env normal, e nao o .env.test
 }
 

@@ -9,3 +9,4 @@ app.register(cookie)
 app.register(transactionsRoutes, {
   prefix: 'transactions',
 })
+// :)
